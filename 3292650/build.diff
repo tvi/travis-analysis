@@ -1,0 +1,26 @@
+diff --git a/lib/mongo/util/logging.rb b/lib/mongo/util/logging.rb
+index 4856428..7d71507 100644
+--- a/lib/mongo/util/logging.rb
++++ b/lib/mongo/util/logging.rb
+@@ -50,7 +50,7 @@ def self.instrumenter=(instrumenter)
+     def log_operation(name, payload, duration)
+       @logger && @logger.debug do
+         msg = "MONGODB "
+-        msg << "(#{(duration * 1000).to_i}ms) "
++        msg << "(%.1fms) " % (duration * 1000)
+         msg << "#{payload[:database]}['#{payload[:collection]}'].#{name}("
+         msg << payload.values_at(:selector, :document, :documents, :fields ).compact.map(&:inspect).join(', ') + ")"
+         msg << ".skip(#{payload[:skip]})"   if payload[:skip]
+diff --git a/test/functional/connection_test.rb b/test/functional/connection_test.rb
+index 6d7fab2..a1c3c53 100644
+--- a/test/functional/connection_test.rb
++++ b/test/functional/connection_test.rb
+@@ -198,7 +198,7 @@ def test_logging_duration
+     logger = Logger.new(output)
+     logger.level = Logger::DEBUG
+     standard_connection(:logger => logger).db(MONGO_TEST_DB)
+-    assert_match(/\(\d+ms\)/, output.string)
++    assert_match(/\(\d+.\d{1}ms\)/, output.string)
+     assert output.string.include?("admin['$cmd'].find")
+   end
+ 
