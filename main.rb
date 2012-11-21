@@ -51,7 +51,8 @@ def get_jobs()
     # Net::HTTP.get(URI.parse(jobs))
   end
   # puts get_upper_boundary()
-  upper = get_upper_boundary()
+  # upper = get_upper_boundary()
+  upper = 3292650
   # ids = (1000000..get_upper_boundary()).to_a
   # ids = ((upper-10)..upper).to_a
 
@@ -72,6 +73,30 @@ def get_jobs()
     end
 
   puts outputData
+
+  # if outputDataJson["state"] == "finished"
+  #   puts outputDataJson["log"]
+  # end
+
+  directory_name = Dir::pwd + "/" + upper.to_s
+  if !(FileTest::directory?(directory_name))
+    Dir::mkdir(directory_name)
+  end 
+  File.open((Dir::pwd + "/" + upper.to_s + "/" +"build.log"), 'w') {|f| f.write(outputDataJson["log"]) }
+  File.open((Dir::pwd + "/" + upper.to_s + "/" +"build.diff"), 'w') do |f| 
+    url = URI.parse(outputDataJson["compare_url"]+".diff")
+    response = Net::HTTP.start(url.host, use_ssl: true, verify_mode: OpenSSL::SSL::VERIFY_NONE) do |http|
+      http.get url.request_uri
+    end
+    case response
+      when Net::HTTPSuccess
+        outputData = response.body
+      else
+        pp response.error!
+      end
+    f.write(outputData)
+  end
+
 
 end
 # https://github.com/rails/rails/compare/1e9522cb257f...3e6485993858.diff
